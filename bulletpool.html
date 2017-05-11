@@ -635,6 +635,7 @@
             this.enemies = game.add.group();
             this.enemies.enableBody = true;
             this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
+
             createEnemies();
 
             this.explosions = game.add.group();
@@ -733,12 +734,6 @@
     function collisionHandler(bullet, enemy) {
         bullet.kill();
         enemy.kill();
-<<<<<<< HEAD
-        
-=======
-
-
->>>>>>> origin/master
         var explosion = this.explosions.getFirstExists(false);
         explosion.reset(enemy.body.x, enemy.body.y);
         explosion.play('kaboom', 30, false, true);
