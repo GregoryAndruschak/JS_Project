@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Bullet Pool</title>
+    <title>Reimu Hakurei fights space fairies with guns</title>
     <meta charset="utf-8">
     <script src="phaser.js"></script>
 </head>
@@ -13,9 +13,21 @@
 
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
+    var enemies;
+
     //  Our core Bullet class
     //  This is a simple Sprite object that we set a few properties on
     //  It is fired by all of the Weapon classes
+
+    var Enemy1 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'enemy');
+        this.hp = 10;
+        this.enemy.scale.setTo(2, 2);
+        this.enemy.anchor.setTo(0, 0);
+        this.enemy.body.moves = false;
+        this.weapon = new Weapon.SingleBullet(this.game);
+        this.weapon.fire(this);
+    };
 
     var Bullet = function (game, key) {
 
@@ -153,7 +165,7 @@
 
         Phaser.Group.call(this, game, game.world, 'Three Way', false, true, Phaser.Physics.ARCADE);
 
-        this.nextFire = 0;
+        this.nextFire = 10;
         this.bulletSpeed = 600;
         this.fireRate = 100;
 
@@ -173,8 +185,8 @@
 
         if (this.game.time.time < this.nextFire) { return; }
 
-        var x = source.x + 10;
-        var y = source.y + 10;
+        var x = source.x + 0;
+        var y = source.y + 0;
 
         this.getFirstExists(false).fire(x, y, 270, this.bulletSpeed, 0, 0);
         this.getFirstExists(false).fire(x, y, 0, this.bulletSpeed, 0, 0);
@@ -544,6 +556,7 @@
         this.background = null;
 
         this.player = null;
+        this.score = 0;
         this.cursors = null;
         this.speed = 400;
 
@@ -600,10 +613,10 @@
             this.weapons.push(new Weapon.SingleBullet(this.game));
             // this.weapons.push(new Weapon.FrontAndBack(this.game));
             // this.weapons.push(new Weapon.ThreeWay(this.game));
-            this.weapons.push(new Weapon.EightWay(this.game));
+            // this.weapons.push(new Weapon.EightWay(this.game));
             // this.weapons.push(new Weapon.ScatterShot(this.game));
             // this.weapons.push(new Weapon.Beam(this.game));
-            this.weapons.push(new Weapon.SplitShot(this.game));
+            // this.weapons.push(new Weapon.SplitShot(this.game));
             // this.weapons.push(new Weapon.Pattern(this.game));
             // this.weapons.push(new Weapon.Rockets(this.game));
             // this.weapons.push(new Weapon.ScaleBullet(this.game));
@@ -626,32 +639,16 @@
 
             this.player.body.collideWorldBounds = true;
 
-            this.weaponName = this.add.bitmapText(8, 364, 'shmupfont', "ENTER = Next Weapon", 24);
+            this.scoretext = this.add.bitmapText(8, 564, 'shmupfont', "Score: ", 24);
+            // this.actual_score = this.add.text( 100, 564, this.score.toString(), {font: '24px Arial', fill: '#00C0EC'});
+
+            // this.weaponName = this.add.bitmapText(8, 564, 'shmupfont', "Single bullet", 24);
 
 //            this.enemy = this.add.sprite(this.game.width/2, this.game.height-500, 'enemy');
 //            this.physics.arcade.enable(this.enemy);
 //            this.enemy.scale.setTo(2, 2);
 
-            this.enemies = game.add.group();
-            this.enemies.enableBody = true;
-            this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
-
-
-            for (var y = 0; y < 5; y++)
-            {
-                for (var x = 0; x < 10; x++)
-                {
-                    var enemy = this.enemies.create((x + 1) * 48, (y + 1) * 50, 'enemy');
-                    enemy.scale.setTo(2, 2);
-                    enemy.anchor.setTo(0, 0);
-                    //enemy.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
-                    //enemy.play('fly');
-                    enemy.body.moves = false;
-                }
-            }
-
-            enemy.x = 100;
-            enemy.y = 50;
+            stage1();
 
 
             this.explosions = game.add.group();
@@ -740,8 +737,13 @@
                 this.weapons[this.currentWeapon].fire(this.player);
             }
 
+            if (enemies.alive)
+            {
+              //  enemies.weapon.fire()
+            }
+
             // collision
-            game.physics.arcade.overlap(this.weapons[this.currentWeapon], this.enemies, collisionHandler, null, this);
+            game.physics.arcade.overlap(this.weapons[this.currentWeapon], enemies, collisionHandler, null, this);
 
         }
 
@@ -749,11 +751,16 @@
 
     function collisionHandler(bullet, enemy) {
         bullet.kill();
-        enemy.kill();
+        enemy.hp = enemy.hp - 1;
+        enemy.hp--;
+        if (enemy.hp < 1){
+            enemy.kill();
+            var explosion = this.explosions.getFirstExists(false);
+            explosion.reset(enemy.body.x, enemy.body.y);
+            explosion.play('kaboom', 30, false, true);
+        }
 
-        var explosion = this.explosions.getFirstExists(false);
-        explosion.reset(enemy.body.x, enemy.body.y);
-        explosion.play('kaboom', 30, false, true);
+
     }
 
 
@@ -763,6 +770,22 @@
         enemy.anchor.x = 0.5;
         enemy.anchor.y = 0.5;
         enemy.animations.add('kaboom');
+
+    }
+
+    function stage1() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+
+
+        for (var x = 0; x < 6; x++)
+        {
+
+            var enemy = Enemy1((x + 1) * 110, 50);
+
+
+        }
 
     }
 
