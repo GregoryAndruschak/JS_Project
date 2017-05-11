@@ -7,9 +7,9 @@
 </head>
 <body>
 
-    <div id="game"></div>
+<div id="game"></div>
 
-    <script type="text/javascript">
+<script type="text/javascript">
 
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
@@ -67,13 +67,11 @@
 
     Bullet.prototype.update = function () {
 
-        if (this.tracking)
-        {
+        if (this.tracking) {
             this.rotation = Math.atan2(this.body.velocity.y, this.body.velocity.x);
         }
 
-        if (this.scaleSpeed > 0)
-        {
+        if (this.scaleSpeed > 0) {
             this.scale.x += this.scaleSpeed;
             this.scale.y += this.scaleSpeed;
         }
@@ -94,8 +92,7 @@
         this.bulletSpeed = 600;
         this.fireRate = 100;
 
-        for (var i = 0; i < 64; i++)
-        {
+        for (var i = 0; i < 64; i++) {
             this.add(new Bullet(game, 'bullet5'), true);
         }
 
@@ -108,12 +105,57 @@
 
     Weapon.SingleBullet.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 17;
         var y = source.y + 10;
 
         this.getFirstExists(false).fire(x, y, -90, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+
+    ////////////////////////////////////////////////////
+    //  A double bullet is fired in front of the ship //
+    ////////////////////////////////////////////////////
+
+    Weapon.DoubleBullet = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Double Bullet', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 600;
+        this.fireRate = 100;
+
+        for (var i = 0; i < 64; i++) {
+            this.add(new Bullet(game, 'bullet5'), true);
+        }
+
+        return this;
+
+    };
+
+    Weapon.DoubleBullet.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.DoubleBullet.prototype.constructor = Weapon.DoubleBullet;
+
+    Weapon.DoubleBullet.prototype.fire = function (source) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        var x1 = source.x + 7;
+        var y1 = source.y + 10;
+
+        var x2 = source.x + 27;
+        var y2 = source.y + 10;
+
+        this.getFirstExists(false).fire(x1, y1, -90, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x2, y2, -90, this.bulletSpeed, 0, 0);
 
         this.nextFire = this.game.time.time + this.fireRate;
 
@@ -131,8 +173,7 @@
         this.bulletSpeed = 600;
         this.fireRate = 100;
 
-        for (var i = 0; i < 64; i++)
-        {
+        for (var i = 0; i < 64; i++) {
             this.add(new Bullet(game, 'bullet5'), true);
         }
 
@@ -145,7 +186,9 @@
 
     Weapon.FrontAndBack.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 10;
         var y = source.y + 10;
@@ -169,8 +212,7 @@
         this.bulletSpeed = 600;
         this.fireRate = 100;
 
-        for (var i = 0; i < 96; i++)
-        {
+        for (var i = 0; i < 96; i++) {
             this.add(new Bullet(game, 'bullet7'), true);
         }
 
@@ -183,7 +225,9 @@
 
     Weapon.ThreeWay.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 0;
         var y = source.y + 0;
@@ -208,8 +252,7 @@
         this.bulletSpeed = 600;
         this.fireRate = 100;
 
-        for (var i = 0; i < 96; i++)
-        {
+        for (var i = 0; i < 96; i++) {
             this.add(new Bullet(game, 'bullet5'), true);
         }
 
@@ -222,7 +265,9 @@
 
     Weapon.EightWay.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 17;
         var y = source.y + 13;
@@ -252,8 +297,7 @@
         this.bulletSpeed = 600;
         this.fireRate = 40;
 
-        for (var i = 0; i < 32; i++)
-        {
+        for (var i = 0; i < 32; i++) {
             this.add(new Bullet(game, 'bullet5'), true);
         }
 
@@ -266,7 +310,9 @@
 
     Weapon.ScatterShot.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 17;
         var y = (source.y + source.height / 2) + this.game.rnd.between(-10, 10);
@@ -289,8 +335,7 @@
         this.bulletSpeed = 1000;
         this.fireRate = 45;
 
-        for (var i = 0; i < 64; i++)
-        {
+        for (var i = 0; i < 64; i++) {
             this.add(new Bullet(game, 'bullet11'), true);
         }
 
@@ -303,7 +348,9 @@
 
     Weapon.Beam.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 40;
         var y = source.y + 10;
@@ -326,8 +373,7 @@
         this.bulletSpeed = 700;
         this.fireRate = 40;
 
-        for (var i = 0; i < 64; i++)
-        {
+        for (var i = 0; i < 64; i++) {
             this.add(new Bullet(game, 'bullet8'), true);
         }
 
@@ -340,7 +386,9 @@
 
     Weapon.SplitShot.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 17;
         var y = source.y + 10;
@@ -370,8 +418,7 @@
 
         this.patternIndex = 0;
 
-        for (var i = 0; i < 64; i++)
-        {
+        for (var i = 0; i < 64; i++) {
             this.add(new Bullet(game, 'bullet4'), true);
         }
 
@@ -384,7 +431,9 @@
 
     Weapon.Pattern.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 15;
         var y = source.y + 10;
@@ -393,8 +442,7 @@
 
         this.patternIndex++;
 
-        if (this.patternIndex === this.pattern.length)
-        {
+        if (this.patternIndex === this.pattern.length) {
             this.patternIndex = 0;
         }
 
@@ -414,8 +462,7 @@
         this.bulletSpeed = 400;
         this.fireRate = 250;
 
-        for (var i = 0; i < 32; i++)
-        {
+        for (var i = 0; i < 32; i++) {
             this.add(new Bullet(game, 'bullet10'), true);
         }
 
@@ -430,7 +477,9 @@
 
     Weapon.Rockets.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 10;
         var y = source.y + 10;
@@ -454,8 +503,7 @@
         this.bulletSpeed = 800;
         this.fireRate = 100;
 
-        for (var i = 0; i < 32; i++)
-        {
+        for (var i = 0; i < 32; i++) {
             this.add(new Bullet(game, 'bullet9'), true);
         }
 
@@ -470,7 +518,9 @@
 
     Weapon.ScaleBullet.prototype.fire = function (source) {
 
-        if (this.game.time.time < this.nextFire) { return; }
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
 
         var x = source.x + 10;
         var y = source.y + 10;
@@ -596,8 +646,7 @@
             this.load.image('enemy', 'assets/invader.png');
             this.load.spritesheet('kaboom', 'assets/explode.png', 128, 128);
 
-            for (var i = 1; i <= 11; i++)
-            {
+            for (var i = 1; i <= 11; i++) {
                 this.load.image('bullet' + i, 'assets/bullet' + i + '.png');
             }
 
@@ -611,26 +660,16 @@
             this.background.autoScroll(0, 250);
 
             this.weapons.push(new Weapon.SingleBullet(this.game));
-            // this.weapons.push(new Weapon.FrontAndBack(this.game));
-            // this.weapons.push(new Weapon.ThreeWay(this.game));
-            // this.weapons.push(new Weapon.EightWay(this.game));
-            // this.weapons.push(new Weapon.ScatterShot(this.game));
-            // this.weapons.push(new Weapon.Beam(this.game));
-            // this.weapons.push(new Weapon.SplitShot(this.game));
-            // this.weapons.push(new Weapon.Pattern(this.game));
-            // this.weapons.push(new Weapon.Rockets(this.game));
-            // this.weapons.push(new Weapon.ScaleBullet(this.game));
-            // this.weapons.push(new Weapon.Combo1(this.game));
-            // this.weapons.push(new Weapon.Combo2(this.game));
+            this.weapons.push(new Weapon.DoubleBullet(this.game));
+
 
             this.currentWeapon = 0;
 
-            for (var i = 1; i < this.weapons.length; i++)
-            {
+            for (var i = 1; i < this.weapons.length; i++) {
                 this.weapons[i].visible = false;
             }
 
-            this.player = this.add.sprite(this.game.width/2-15, this.game.height-50, 'anime');
+            this.player = this.add.sprite(this.game.width / 2 - 15, this.game.height - 50, 'anime');
             this.player.animations.add('left', [12, 13, 14, 15], 10, true);
             this.player.animations.add('right', [20, 21, 22, 23], 10, true);
             this.player.animations.add('center', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
@@ -650,48 +689,23 @@
 
             stage1();
 
-
             this.explosions = game.add.group();
             this.explosions.createMultiple(30, 'kaboom');
             this.explosions.forEach(setupEnemy, this);
 
 
-
             //  Cursor keys to fly + space to fire
             this.cursors = this.input.keyboard.createCursorKeys();
-
-            this.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-
-            var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-            changeKey.onDown.add(this.nextWeapon, this);
-
         },
 
         nextWeapon: function () {
-
-            //  Tidy-up the current weapon
-            if (this.currentWeapon > 9)
-            {
-                this.weapons[this.currentWeapon].reset();
-            }
-            else
-            {
-                this.weapons[this.currentWeapon].visible = false;
-                this.weapons[this.currentWeapon].callAll('reset', null, 0, 0);
-                this.weapons[this.currentWeapon].setAll('exists', false);
-            }
-
             //  Activate the new one
             this.currentWeapon++;
-
-            if (this.currentWeapon === this.weapons.length)
-            {
+            if (this.currentWeapon === this.weapons.length) {
                 this.currentWeapon = 0;
             }
-
             this.weapons[this.currentWeapon].visible = true;
-
-            this.weaponName.text = this.weapons[this.currentWeapon].name;
+           // this.weaponName.text = this.weapons[this.currentWeapon].name;
 
         },
 
@@ -699,41 +713,42 @@
 
             this.player.body.velocity.set(0);
 
-            if(this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)){
-                this.focused=true;
-                this.speed = 200;
+            if (this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) {
+                if (!this.focused) {
+                    this.focused = true;
+                    this.speed = 200;
+                    this.nextWeapon();
+                }
             }
-            else{
-                this.focused=false;
-                this.speed=400;
+            else {
+                if (this.focused) {
+                    this.focused = false;
+                    this.speed = 400;
+                    this.nextWeapon();
+                }
             }
 
 
-            if (this.cursors.left.isDown)
-            {
+            if (this.cursors.left.isDown) {
                 this.player.body.velocity.x = -this.speed;
                 this.player.animations.play('left');
             }
-            else if (this.cursors.right.isDown)
-            {
+            else if (this.cursors.right.isDown) {
                 this.player.body.velocity.x = this.speed;
                 this.player.animations.play('right');
             }
-            else{
+            else {
                 this.player.animations.play('center');
             }
 
-            if (this.cursors.up.isDown)
-            {
+            if (this.cursors.up.isDown) {
                 this.player.body.velocity.y = -this.speed;
             }
-            else if (this.cursors.down.isDown)
-            {
+            else if (this.cursors.down.isDown) {
                 this.player.body.velocity.y = this.speed;
             }
 
-            if (this.input.keyboard.isDown(Phaser.Keyboard.Z))
-            {
+            if (this.input.keyboard.isDown(Phaser.Keyboard.Z)) {
                 this.weapons[this.currentWeapon].fire(this.player);
             }
 
@@ -764,9 +779,7 @@
     }
 
 
-    function setupEnemy (enemy) {
-
-
+    function setupEnemy(enemy) {
         enemy.anchor.x = 0.5;
         enemy.anchor.y = 0.5;
         enemy.animations.add('kaboom');
@@ -791,6 +804,6 @@
 
     game.state.add('Game', PhaserGame, true);
 
-    </script>
+</script>
 </body>
 </html>
