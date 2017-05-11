@@ -18,6 +18,7 @@
     var enemies;
     var firingTimer = 0;
     var livingEnemies = [];
+    var stage = 1;
 
     //  Our core Bullet class
     //  This is a simple Sprite object that we set a few properties on
@@ -27,6 +28,7 @@
     var Enemy1 = function (x, y) {
         this.enemy = enemies.create(x, y, 'fairy1');
         this.enemy.hp = 8;
+        this.enemy.scale.setTo(1.5,1.5);
         this.enemy.body.moves = false;
         this.enemy.weapon = new Weapon.ThreeWay(this.game);
     };
@@ -34,6 +36,7 @@
     var Enemy2 = function (x, y) {
         this.enemy = enemies.create(x, y, 'fairy2');
         this.enemy.hp = 12;
+        this.enemy.scale.setTo(1.5,1.5);
         this.enemy.body.moves = false;
         this.enemy.animations.add('fairy2', [0, 1, 2, 3], 10, true);
         this.enemy.animations.play('fairy2');
@@ -312,11 +315,11 @@
         Phaser.Group.call(this, game, game.world, 'Eight Way', false, true, Phaser.Physics.ARCADE);
 
         this.nextFire = 0;
-        this.bulletSpeed = 600;
-        this.fireRate = 100;
+        this.bulletSpeed = 350;
+        this.fireRate = 500;
 
         for (var i = 0; i < 96; i++) {
-            this.add(new Bullet(game, 'bullet5'), true);
+            this.add(new Bullet(game, 'bullet'), true);
         }
 
         return this;
@@ -719,6 +722,8 @@
                 this.load.image('bullet' + i, 'assets/bullet' + i + '.png');
             }
 
+            this.load.image('bullet', 'assets/bullet.png');
+
             //  Note: Graphics are not for use in any commercial project
 
         },
@@ -844,17 +849,13 @@
             }
 
 
+
         }
 
     };
 
-    function enemyFires() {
-       // if(s1){
-            enemyFires1();
-        //}
-    }
 
-    function enemyFires1 () {
+    function enemyFires () {
 
         livingEnemies.length=0;
 
@@ -875,6 +876,37 @@
             firingTimer = game.time.now;
         }
 
+        if (livingEnemies.length === 0)
+        {
+            stage++;
+            nextStage();
+        }
+    }
+
+    function nextStage() {
+        switch (stage){
+            case 1:
+                stage1();
+                break;
+            case 2:
+                stage2();
+                break;
+            case 3:
+                stage3();
+                break;
+            case 4:
+                stage4();
+                break;
+            case 5:
+                stage5();
+                break;
+            case 6:
+                stage6();
+                break;
+            case 7:
+                stage7();
+                break;
+        }
     }
 
     function collisionHandler(bullet, enemy) {
@@ -924,11 +956,102 @@
         enemies.enableBody = true;
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
             for(var x=0;x<3;x++) {
-                var enemy = Enemy2((x + 3) * 110-70, 50);
+                var enemy = Enemy1((x + 3) * 110-70, 50);
             }
             for(var x=0;x<3;x++) {
-                var enemy = Enemy2((x + 1) * 220-70, 110);
+                var enemy = Enemy1((x + 1) * 220-70, 110);
             }
+    }
+
+    function stage2() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage3() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage4() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage5() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage6() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage7() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            if (x === 1){
+                continue
+            }
+            var enemy = Enemy2((x + 3) * 110-70, 110);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
     }
 
     game.state.add('Game', PhaserGame, true);
