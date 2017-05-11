@@ -68,15 +68,6 @@
 
     };
 
-    function collisionHandler(bullet, enemy) {
-        bullet.kill();
-        enemy.kill();
-
-        var explosion = game.explosions.getFirstExists(false);
-        explosion.reset(enemy.body.x, enemy.body.y);
-        explosion.play('kaboom', 30, false, true);
-    }
-
     var Weapon = {};
 
     ////////////////////////////////////////////////////
@@ -640,7 +631,7 @@
 
             this.explosions = game.add.group();
             this.explosions.createMultiple(30, 'kaboom');
-            //this.explosions.forEach(setupInvader, this);
+            this.explosions.forEach(setupInvader, this);
 
 
             //  Cursor keys to fly + space to fire
@@ -719,6 +710,23 @@
         }
 
     };
+    
+    function collisionHandler(bullet, enemy) {
+        bullet.kill();
+        enemy.kill();
+
+        var explosion = this.explosions.getFirstExists(false);
+        explosion.reset(enemy.body.x, enemy.body.y);
+        explosion.play('kaboom', 30, false, true);
+    }
+
+    function setupInvader (enemy) {
+
+        enemy.anchor.x = 0.5;
+        enemy.anchor.y = 0.5;
+        enemy.animations.add('kaboom');
+
+    }
 
     game.state.add('Game', PhaserGame, true);
 
