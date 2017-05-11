@@ -13,7 +13,10 @@
 
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
+    var lives = 1000;
     var enemies;
+    var firingTimer = 0;
+    var livingEnemies = [];
 
     //  Our core Bullet class
     //  This is a simple Sprite object that we set a few properties on
@@ -21,12 +24,11 @@
 
     var Enemy1 = function (x, y) {
         this.enemy = enemies.create(x, y, 'enemy');
-        this.hp = 10;
+        this.enemy.hp = 10;
         this.enemy.scale.setTo(2, 2);
         this.enemy.anchor.setTo(0, 0);
         this.enemy.body.moves = false;
-        this.weapon = new Weapon.SingleBullet(this.game);
-        this.weapon.fire(this);
+        this.enemy.weapon = new Weapon.ThreeWay(this.game);
     };
 
     var Bullet = function (game, key) {
@@ -209,8 +211,8 @@
         Phaser.Group.call(this, game, game.world, 'Three Way', false, true, Phaser.Physics.ARCADE);
 
         this.nextFire = 10;
-        this.bulletSpeed = 600;
-        this.fireRate = 100;
+        this.bulletSpeed = 100;
+        this.fireRate = 1000;
 
         for (var i = 0; i < 96; i++) {
             this.add(new Bullet(game, 'bullet7'), true);
@@ -229,12 +231,12 @@
             return;
         }
 
-        var x = source.x + 0;
-        var y = source.y + 0;
+        var x = source.x + 17;
+        var y = source.y + 25;
 
-        this.getFirstExists(false).fire(x, y, 270, this.bulletSpeed, 0, 0);
-        this.getFirstExists(false).fire(x, y, 0, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 70, this.bulletSpeed, 0, 0);
         this.getFirstExists(false).fire(x, y, 90, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 110, this.bulletSpeed, 0, 0);
 
         this.nextFire = this.game.time.time + this.fireRate;
 
@@ -716,7 +718,7 @@
             if (this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) {
                 if (!this.focused) {
                     this.focused = true;
-                    this.speed = 200;
+                    this.speed = 150;
                     this.nextWeapon();
                 }
             }
@@ -752,21 +754,59 @@
                 this.weapons[this.currentWeapon].fire(this.player);
             }
 
-            if (enemies.alive)
+//            if (enemies.)
+//            {
+//              enemies.forEachAlive(function(){this.enemy.weapon.fire(this.enemy)});
+//            }
+
+            if (game.time.now > firingTimer)
             {
-              //  enemies.weapon.fire()
+                enemyFires();
             }
 
             // collision
             game.physics.arcade.overlap(this.weapons[this.currentWeapon], enemies, collisionHandler, null, this);
+            for(var i = 0; i < livingEnemies.length; i++)
+            {
+                game.physics.arcade.overlap(livingEnemies[i].weapon, this.player, enemyHitsPlayer, null, this);
+            }
+
 
         }
 
     };
 
+    function enemyFires() {
+       // if(s1){
+            enemyFires1();
+        //}
+    }
+
+    function enemyFires1 () {
+
+        livingEnemies.length=0;
+
+        enemies.forEachAlive(function(enemy){
+
+            // put every living enemy in an array
+            livingEnemies.push(enemy);
+        });
+
+
+        if (livingEnemies.length > 0)
+        {
+
+            for(var i = 0; i < livingEnemies.length; i++)
+            {
+                livingEnemies[i].weapon.fire(livingEnemies[i]);
+            }
+            firingTimer = game.time.now + 2000;
+        }
+
+    }
+
     function collisionHandler(bullet, enemy) {
         bullet.kill();
-        enemy.hp = enemy.hp - 1;
         enemy.hp--;
         if (enemy.hp < 1){
             enemy.kill();
@@ -775,6 +815,25 @@
             explosion.play('kaboom', 30, false, true);
         }
 
+    }
+
+    function enemyHitsPlayer (player,bullet) {
+
+        bullet.kill();
+
+        lives--;
+
+        //  And create an explosion :)
+        var explosion = this.explosions.getFirstExists(false);
+        explosion.reset(player.body.x, player.body.y);
+        explosion.play('kaboom', 30, false, true);
+
+        // When the player dies
+        if (lives < 1)
+        {
+            player.kill();
+
+        }
 
     }
 
@@ -790,7 +849,6 @@
         enemies = game.add.group();
         enemies.enableBody = true;
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
-
 
         for (var x = 0; x < 6; x++)
         {
