@@ -12,7 +12,8 @@
 <script type="text/javascript">
 
     var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
-
+    var px=0;
+    var py=0;
     var lives = 1000;
     var enemies;
     var firingTimer = 0;
@@ -25,33 +26,27 @@
 
     var Enemy1 = function (x, y) {
         this.enemy = enemies.create(x, y, 'fairy1');
-        this.enemy.hp = 10;
+        this.enemy.hp = 8;
         this.enemy.body.moves = false;
-        this.weapon = new Weapon.SingleBullet(this.game);
-        this.weapon.fire(this);
         this.enemy.weapon = new Weapon.ThreeWay(this.game);
     };
 
     var Enemy2 = function (x, y) {
         this.enemy = enemies.create(x, y, 'fairy2');
-        this.enemy.hp = 10;
+        this.enemy.hp = 12;
         this.enemy.body.moves = false;
         this.enemy.animations.add('fairy2', [0, 1, 2, 3], 10, true);
         this.enemy.animations.play('fairy2');
-        this.weapon = new Weapon.SingleBullet(this.game);
-        this.weapon.fire(this);
-        this.enemy.weapon = new Weapon.ThreeWay(this.game);
+        this.enemy.weapon = new Weapon.HomingBullet(this.game);
     };
 
     var Enemy3 = function (x, y) {
         this.enemy = enemies.create(x, y, 'fairy3');
-        this.enemy.hp = 10;
+        this.enemy.hp = 16;
         this.enemy.body.moves = false;
         this.enemy.animations.add('fairy3', [0, 1, 2, 3], 10, true);
         this.enemy.animations.play('fairy3');
-        this.weapon = new Weapon.SingleBullet(this.game);
-        this.weapon.fire(this);
-        this.enemy.weapon = new Weapon.ThreeWay(this.game);
+        this.enemy.weapon = new Weapon.EightWay(this.game);
     };
 
     var Bullet = function (game, key) {
@@ -138,6 +133,49 @@
         var y = source.y + 10;
 
         this.getFirstExists(false).fire(x, y, -90, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+
+    ////////////////////////////////////////////////////
+    //  A homing bulet //
+    ////////////////////////////////////////////////////
+
+    Weapon.HomingBullet = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Homing Bullet', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 350;
+        this.fireRate = 500;
+
+        for (var i = 0; i < 64; i++) {
+            this.add(new Bullet(game, 'bullet6'), true);
+        }
+
+        this.setAll('tracking', true);
+
+        return this;
+
+    };
+
+    Weapon.HomingBullet.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.HomingBullet.prototype.constructor = Weapon.HomingBullet;
+
+    Weapon.HomingBullet.prototype.fire = function (source) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        var x = source.x + 17;
+        var y = source.y + 10;
+
+        var angleDeg = Math.atan2(py - y, px - x) * 180 / Math.PI;
+
+        this.getFirstExists(false).fire(x, y, angleDeg, this.bulletSpeed, 0, 0);
 
         this.nextFire = this.game.time.time + this.fireRate;
 
@@ -745,6 +783,8 @@
 
         update: function () {
 
+            px=this.player.x;
+            py=this.player.y;
             this.player.body.velocity.set(0);
 
             if (this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) {
@@ -884,13 +924,11 @@
         enemies.enableBody = true;
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
             for(var x=0;x<3;x++) {
-                var enemy = Enemy1((x + 3) * 110-70, 50);
+                var enemy = Enemy2((x + 3) * 110-70, 50);
             }
-
             for(var x=0;x<3;x++) {
-                var enemy = Enemy1((x + 1) * 220-70, 110);
+                var enemy = Enemy2((x + 1) * 220-70, 110);
             }
-
     }
 
     game.state.add('Game', PhaserGame, true);
