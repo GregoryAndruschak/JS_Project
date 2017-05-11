@@ -635,7 +635,22 @@
             this.enemies = game.add.group();
             this.enemies.enableBody = true;
             this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
-            createEnemies();
+
+            for (var y = 0; y < 5; y++)
+            {
+                for (var x = 0; x < 10; x++)
+                {
+                    var enemy = this.enemies.create((x + 1) * 48, (y + 1) * 50, 'enemy');
+                    enemy.scale.setTo(2, 2);
+                    enemy.anchor.setTo(0, 0);
+                    //enemy.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
+                    //enemy.play('fly');
+                    enemy.body.moves = false;
+                }
+            }
+
+            enemy.x = 100;
+            enemy.y = 50;
 
             this.explosions = game.add.group();
             this.explosions.createMultiple(30, 'kaboom');
@@ -724,7 +739,7 @@
             }
 
             // collision
-            game.physics.arcade.overlap(this.weapons[this.currentWeapon], this.enemy, collisionHandler, null, this);
+            game.physics.arcade.overlap(this.weapons[this.currentWeapon], this.enemies, collisionHandler, null, this);
 
         }
 
@@ -753,40 +768,6 @@
         enemy.animations.add('kaboom');
 
     }
-
-
-    function createEnemies () {
-
-        for (var y = 0; y < 4; y++)
-        {
-            for (var x = 0; x < 10; x++)
-            {
-                var enemy = this.enemies.create(x * 48, y * 50, 'enemy');
-                enemy.anchor.setTo(0.5, 0.5);
-                //enemy.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
-                //enemy.play('fly');
-                enemy.body.moves = false;
-            }
-        }
-
-        enemy.x = 100;
-        enemy.y = 50;
-
-        //  All this does is basically start the invaders moving. Notice we're moving the Group they belong to, rather than the invaders directly.
-        // var tween = game.add.tween(aliens).to( { x: 200 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
-
-        //  When the tween loops it calls descend
-        // tween.onLoop.add(descend, this);
-    }
-
-    function setupInvader (invader) {
-
-        invader.anchor.x = 0.5;
-        invader.anchor.y = 0.5;
-        invader.animations.add('kaboom');
-
-    }
-
 
     game.state.add('Game', PhaserGame, true);
 
