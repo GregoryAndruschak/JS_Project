@@ -19,12 +19,16 @@
     //  This is a simple Sprite object that we set a few properties on
     //  It is fired by all of the Weapon classes
 
-    var Enemy1 = function (x, y) {
-        this.enemy = enemies.create(x, y, 'enemy');
-        this.hp = 10;
+    var Enemy1 = function (x, y, sprite) {
+        this.enemy = enemies.create(x, y, sprite);
+        this.enemy.hp = 10;
         this.enemy.scale.setTo(2, 2);
         this.enemy.anchor.setTo(0, 0);
         this.enemy.body.moves = false;
+        if(sprite!='fairy1'){
+            this.enemy.animations.add(sprite, [0, 1, 2, 3], 10, true);
+            this.enemy.animations.play(sprite);
+        }
         this.weapon = new Weapon.SingleBullet(this.game);
         this.weapon.fire(this);
     };
@@ -645,6 +649,10 @@
             this.load.bitmapFont('shmupfont', 'assets/shmupfont.png', 'assets/shmupfont.xml');
             this.load.image('enemy', 'assets/invader.png');
             this.load.spritesheet('kaboom', 'assets/explode.png', 128, 128);
+            this.load.image('fairy1','assets/fairy1.png');
+            this.load.spritesheet('fairy2', 'assets/fairy2.png', 32, 32);
+            this.load.spritesheet('fairy3', 'assets/fairy3.png', 64, 64);
+
 
             for (var i = 1; i <= 11; i++) {
                 this.load.image('bullet' + i, 'assets/bullet' + i + '.png');
@@ -768,14 +776,13 @@
         bullet.kill();
         enemy.hp = enemy.hp - 1;
         enemy.hp--;
+        console.log(enemy.hp);
         if (enemy.hp < 1){
             enemy.kill();
             var explosion = this.explosions.getFirstExists(false);
             explosion.reset(enemy.body.x, enemy.body.y);
             explosion.play('kaboom', 30, false, true);
         }
-
-
     }
 
 
@@ -791,13 +798,9 @@
         enemies.enableBody = true;
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
 
-
         for (var x = 0; x < 6; x++)
         {
-
-            var enemy = Enemy1((x + 1) * 110, 50);
-
-
+            var enemy = Enemy1((x + 1) * 110, 50,'fairy3');
         }
 
     }
