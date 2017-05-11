@@ -551,6 +551,7 @@
         this.currentWeapon = 0;
         this.weaponName = null;
 
+        this.enemies = null;
         this.enemy = null;
 
         this.explosions = null;
@@ -627,11 +628,16 @@
 
             this.enemy = this.add.sprite(this.game.width/2, this.game.height-500, 'enemy');
             this.physics.arcade.enable(this.enemy);
-            this.enemy.scale.setTo(10, 10);
+            this.enemy.scale.setTo(2, 2);
+
+            this.enemies = game.add.group();
+            this.enemies.enableBody = true;
+            this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
+            createEnemies();
 
             this.explosions = game.add.group();
             this.explosions.createMultiple(30, 'kaboom');
-            this.explosions.forEach(setupInvader, this);
+            this.explosions.forEach(setupEnemy, this);
 
 
             //  Cursor keys to fly + space to fire
@@ -699,7 +705,7 @@
                 this.player.body.velocity.y = this.speed;
             }
 
-            if (this.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+            if (this.input.keyboard.isDown(Phaser.Keyboard.Z))
             {
                 this.weapons[this.currentWeapon].fire(this.player);
             }
@@ -710,7 +716,7 @@
         }
 
     };
-    
+
     function collisionHandler(bullet, enemy) {
         bullet.kill();
         enemy.kill();
@@ -720,11 +726,43 @@
         explosion.play('kaboom', 30, false, true);
     }
 
-    function setupInvader (enemy) {
+    function setupEnemy (enemy) {
 
         enemy.anchor.x = 0.5;
         enemy.anchor.y = 0.5;
         enemy.animations.add('kaboom');
+
+    }
+
+    function createEnemies () {
+
+        for (var y = 0; y < 4; y++)
+        {
+            for (var x = 0; x < 10; x++)
+            {
+                var enemy = this.enemies.create(x * 48, y * 50, 'enemy');
+                enemy.anchor.setTo(0.5, 0.5);
+                //enemy.animations.add('fly', [ 0, 1, 2, 3 ], 20, true);
+                //enemy.play('fly');
+                enemy.body.moves = false;
+            }
+        }
+
+        enemy.x = 100;
+        enemy.y = 50;
+
+        //  All this does is basically start the invaders moving. Notice we're moving the Group they belong to, rather than the invaders directly.
+        // var tween = game.add.tween(aliens).to( { x: 200 }, 2000, Phaser.Easing.Linear.None, true, 0, 1000, true);
+
+        //  When the tween loops it calls descend
+        // tween.onLoop.add(descend, this);
+    }
+
+    function setupInvader (invader) {
+
+        invader.anchor.x = 0.5;
+        invader.anchor.y = 0.5;
+        invader.animations.add('kaboom');
 
     }
 
