@@ -68,6 +68,15 @@
 
     };
 
+    function collisionHandler(bullet, enemy) {
+        bullet.kill();
+        enemy.kill();
+
+        var explosion = game.explosions.getFirstExists(false);
+        explosion.reset(enemy.body.x, enemy.body.y);
+        explosion.play('kaboom', 30, false, true);
+    }
+
     var Weapon = {};
 
     ////////////////////////////////////////////////////
@@ -551,6 +560,10 @@
         this.currentWeapon = 0;
         this.weaponName = null;
 
+        this.enemy = null;
+
+        this.explosions = null;
+
     };
 
     PhaserGame.prototype = {
@@ -573,6 +586,8 @@
             this.load.image('background', 'assets/starfield.png');
             this.load.spritesheet('anime', 'assets/anime.png', 32, 48);
             this.load.bitmapFont('shmupfont', 'assets/shmupfont.png', 'assets/shmupfont.xml');
+            this.load.image('enemy', 'assets/invader.png');
+            this.load.spritesheet('kaboom', 'assets/explode.png', 128, 128);
 
             for (var i = 1; i <= 11; i++)
             {
@@ -618,6 +633,15 @@
             this.player.body.collideWorldBounds = true;
 
             this.weaponName = this.add.bitmapText(8, 364, 'shmupfont', "ENTER = Next Weapon", 24);
+
+            this.enemy = this.add.sprite(this.game.width/2, this.game.height-500, 'enemy');
+            this.physics.arcade.enable(this.enemy);
+            this.enemy.scale.setTo(10, 10);
+
+            this.explosions = game.add.group();
+            this.explosions.createMultiple(30, 'kaboom');
+            //this.explosions.forEach(setupInvader, this);
+
 
             //  Cursor keys to fly + space to fire
             this.cursors = this.input.keyboard.createCursorKeys();
@@ -688,6 +712,9 @@
             {
                 this.weapons[this.currentWeapon].fire(this.player);
             }
+
+            // collision
+            game.physics.arcade.overlap(this.weapons[this.currentWeapon], this.enemy, collisionHandler, null, this);
 
         }
 
