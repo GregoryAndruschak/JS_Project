@@ -556,6 +556,8 @@
 
         this.explosions = null;
 
+        this.focused = false;
+
     };
 
     PhaserGame.prototype = {
@@ -640,6 +642,7 @@
             this.explosions.forEach(setupEnemy, this);
 
 
+
             //  Cursor keys to fly + space to fire
             this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -682,6 +685,16 @@
 
             this.player.body.velocity.set(0);
 
+            if(this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)){
+                this.focused=true;
+                this.speed = 200;
+            }
+            else{
+                this.focused=false;
+                this.speed=400;
+            }
+
+
             if (this.cursors.left.isDown)
             {
                 this.player.body.velocity.x = -this.speed;
@@ -721,18 +734,22 @@
         bullet.kill();
         enemy.kill();
 
+
         var explosion = this.explosions.getFirstExists(false);
         explosion.reset(enemy.body.x, enemy.body.y);
         explosion.play('kaboom', 30, false, true);
     }
 
+
     function setupEnemy (enemy) {
+
 
         enemy.anchor.x = 0.5;
         enemy.anchor.y = 0.5;
         enemy.animations.add('kaboom');
 
     }
+
 
     function createEnemies () {
 
@@ -765,6 +782,7 @@
         invader.animations.add('kaboom');
 
     }
+
 
     game.state.add('Game', PhaserGame, true);
 
