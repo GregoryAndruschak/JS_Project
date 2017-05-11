@@ -23,17 +23,32 @@
     //  It is fired by all of the Weapon classes
 
 
-    var Enemy1 = function (x, y, sprite) {
-        this.enemy = enemies.create(x, y, sprite);
+    var Enemy1 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy1');
         this.enemy.hp = 10;
-        this.enemy.scale.setTo(2, 2);
-        this.enemy.anchor.setTo(0, 0);
         this.enemy.body.moves = false;
+        this.weapon = new Weapon.SingleBullet(this.game);
+        this.weapon.fire(this);
+        this.enemy.weapon = new Weapon.ThreeWay(this.game);
+    };
 
-        if(sprite!='fairy1'){
-            this.enemy.animations.add(sprite, [0, 1, 2, 3], 10, true);
-            this.enemy.animations.play(sprite);
-        }
+    var Enemy2 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy2');
+        this.enemy.hp = 10;
+        this.enemy.body.moves = false;
+        this.enemy.animations.add('fairy2', [0, 1, 2, 3], 10, true);
+        this.enemy.animations.play('fairy2');
+        this.weapon = new Weapon.SingleBullet(this.game);
+        this.weapon.fire(this);
+        this.enemy.weapon = new Weapon.ThreeWay(this.game);
+    };
+
+    var Enemy3 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy3');
+        this.enemy.hp = 10;
+        this.enemy.body.moves = false;
+        this.enemy.animations.add('fairy3', [0, 1, 2, 3], 10, true);
+        this.enemy.animations.play('fairy3');
         this.weapon = new Weapon.SingleBullet(this.game);
         this.weapon.fire(this);
         this.enemy.weapon = new Weapon.ThreeWay(this.game);
@@ -616,6 +631,7 @@
         this.background = null;
 
         this.player = null;
+        this.hitbox = null;
         this.score = 0;
         this.cursors = null;
         this.speed = 400;
@@ -658,6 +674,7 @@
             this.load.image('fairy1','assets/fairy1.png');
             this.load.spritesheet('fairy2', 'assets/fairy2.png', 32, 32);
             this.load.spritesheet('fairy3', 'assets/fairy3.png', 64, 64);
+            this.load.image('hitbox','assets/enemy-bullet.png');
 
 
             for (var i = 1; i <= 11; i++) {
@@ -687,6 +704,9 @@
             this.player.animations.add('left', [12, 13, 14, 15], 10, true);
             this.player.animations.add('right', [20, 21, 22, 23], 10, true);
             this.player.animations.add('center', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
+            this.hitbox = this.make.sprite(13,19,'hitbox');
+            this.hitbox.alpha = 0.7;
+            this.player.addChild(this.hitbox);
 
             this.physics.arcade.enable(this.player);
 
@@ -780,7 +800,7 @@
             game.physics.arcade.overlap(this.weapons[this.currentWeapon], enemies, collisionHandler, null, this);
             for(var i = 0; i < livingEnemies.length; i++)
             {
-                game.physics.arcade.overlap(livingEnemies[i].weapon, this.player, enemyHitsPlayer, null, this);
+                game.physics.arcade.overlap(livingEnemies[i].weapon, this.hitbox, enemyHitsPlayer, null, this);
             }
 
 
@@ -812,7 +832,7 @@
             {
                 livingEnemies[i].weapon.fire(livingEnemies[i]);
             }
-            firingTimer = game.time.now + 2000;
+            firingTimer = game.time.now;
         }
 
     }
@@ -845,7 +865,7 @@
         // When the player dies
         if (lives < 1)
         {
-            player.kill();
+            this.player.kill();
 
         }
 
@@ -863,11 +883,13 @@
         enemies = game.add.group();
         enemies.enableBody = true;
         enemies.physicsBodyType = Phaser.Physics.ARCADE;
+            for(var x=0;x<3;x++) {
+                var enemy = Enemy1((x + 3) * 110-70, 50);
+            }
 
-        for (var x = 0; x < 6; x++)
-        {
-            var enemy = Enemy1((x + 1) * 110, 50,'fairy3');
-        }
+            for(var x=0;x<3;x++) {
+                var enemy = Enemy1((x + 1) * 220-70, 110);
+            }
 
     }
 
