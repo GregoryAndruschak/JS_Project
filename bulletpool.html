@@ -573,6 +573,7 @@
             this.load.image('background', 'assets/starfield.png');
             this.load.spritesheet('anime', 'assets/anime.png', 32, 48);
             this.load.bitmapFont('shmupfont', 'assets/shmupfont.png', 'assets/shmupfont.xml');
+            this.load.image('boss', 'assets/utsuho.png');
 
             for (var i = 1; i <= 11; i++)
             {
@@ -613,6 +614,8 @@
             this.player.animations.add('right', [20, 21, 22, 23], 10, true);
             this.player.animations.add('center', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
 
+            this.add.sprite(10,10,'boss');
+
             this.physics.arcade.enable(this.player);
 
             this.player.body.collideWorldBounds = true;
@@ -623,6 +626,9 @@
             this.cursors = this.input.keyboard.createCursorKeys();
 
             this.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+            this.input.keyboard.addKeyCapture([ Phaser.Keyboard.SHIFT ]);
+            this.input.keyboard.addKeyCapture([ Phaser.Keyboard.Z ]);
+            this.input.keyboard.addKeyCapture([ Phaser.Keyboard.ENTER ]);
 
             var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
             changeKey.onDown.add(this.nextWeapon, this);
