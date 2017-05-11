@@ -636,6 +636,7 @@
             this.enemies.enableBody = true;
             this.enemies.physicsBodyType = Phaser.Physics.ARCADE;
 
+
             for (var y = 0; y < 5; y++)
             {
                 for (var x = 0; x < 10; x++)
@@ -651,6 +652,7 @@
 
             enemy.x = 100;
             enemy.y = 50;
+
 
             this.explosions = game.add.group();
             this.explosions.createMultiple(30, 'kaboom');
