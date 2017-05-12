@@ -1054,6 +1054,27 @@
 
     }
 
+    function boss() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            if (x === 1){
+                continue
+            }
+            var enemy = Enemy2((x + 3) * 110-70, 110);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
     game.state.add('Game', PhaserGame, true);
 
 </script>
