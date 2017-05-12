@@ -22,6 +22,7 @@
     var bossx= null;
     var score = 0;
     var timer = 0;
+    var ready = false;
 
     //  Our core Bullet class
     //  This is a simple Sprite object that we set a few properties on
@@ -899,12 +900,9 @@
             enemyFires();
 
 
-            if(stage==8){
-                timer++;
-            }
-
-            if(timer>300){
-                stage=9;
+            if(stage===8 && (game.time.now - timer) === 1000){
+                stage++;
+                console.log('ready');
                 nextStage();
             }
 
@@ -952,7 +950,7 @@
             firingTimer = game.time.now;
         }
 
-        if (livingEnemies.length === 0 && stage!=8)
+        if (livingEnemies.length === 0 && stage!=9 && stage!=8)
         {
             stage++;
             nextStage();
@@ -982,6 +980,10 @@
             case 7:
                 stage7();
                 break;
+            case 8:
+                timer = game.time.now;
+
+                break;
             case 9:
                 stageX();
                 break;
@@ -991,7 +993,6 @@
     function collisionHandler(bullet, enemy) {
         bullet.kill();
         enemy.hp--;
-        console.log(enemy.hp);
         if (enemy.hp < 1){
             enemy.kill();
             var explosion = this.explosions.getFirstExists(false);
