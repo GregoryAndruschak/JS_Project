@@ -1,0 +1,788 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Reimu Hakurei fights space fairies with guns</title>
+    <meta charset="utf-8">
+    <script src="phaser.js"></script>
+</head>
+<body>
+
+<div id="game"></div>
+
+<script type="text/javascript">
+
+    var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
+    var px=0;
+    var py=0;
+    var lives = 1000;
+    var enemies;
+    var firingTimer = 0;
+    var livingEnemies = [];
+    var stage = 0;
+    var score = 0;
+    var scoreText = null;
+    var timer = 0;
+    var menu=null;
+    var go = false;
+
+
+
+    var Enemy1 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy1');
+        this.enemy.hp = 8;
+        this.enemy.scale.setTo(1.5,1.5);
+        this.enemy.body.moves = false;
+        this.enemy.weapon = new Weapon.ThreeWay(this.game);
+        this.enemy.score = 250;
+    };
+
+    var Enemy2 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy2');
+        this.enemy.hp = 12;
+        this.enemy.scale.setTo(1.5,1.5);
+        this.enemy.body.moves = false;
+        this.enemy.animations.add('fairy2', [0, 1, 2, 3], 10, true);
+        this.enemy.animations.play('fairy2');
+        this.enemy.weapon = new Weapon.HomingBullet(this.game);
+        this.enemy.score = 450;
+    };
+
+    var Enemy3 = function (x, y) {
+        this.enemy = enemies.create(x, y, 'fairy3');
+        this.enemy.hp = 16;
+        this.enemy.body.moves = false;
+        this.enemy.animations.add('fairy3', [0, 1, 2, 3], 10, true);
+        this.enemy.animations.play('fairy3');
+        this.enemy.weapon = new Weapon.EightWay(this.game);
+        this.enemy.score = 600;
+    };
+
+    var Boss = function (x, y) {
+        this.enemy = enemies.create(x, y, 'tyanochka');
+        this.enemy.hp = 1000;
+        this.enemy.body.moves = false;
+        this.enemy.weapon = new Weapon.Boss(this.game);
+        this.enemy.score = 2500;
+        return this;
+    };
+
+    var Bullet = function (game, key) {
+
+        Phaser.Sprite.call(this, game, 0, 0, key);
+
+        this.texture.baseTexture.scaleMode = PIXI.scaleModes.NEAREST;
+
+        this.anchor.set(0.5);
+
+        this.checkWorldBounds = true;
+        this.outOfBoundsKill = true;
+        this.exists = false;
+
+        this.tracking = false;
+        this.scaleSpeed = 0;
+
+    };
+
+    Bullet.prototype = Object.create(Phaser.Sprite.prototype);
+    Bullet.prototype.constructor = Bullet;
+
+    Bullet.prototype.fire = function (x, y, angle, speed, gx, gy) {
+
+        gx = gx || 0;
+        gy = gy || 0;
+
+        this.reset(x, y);
+        this.scale.set(1);
+
+        this.game.physics.arcade.velocityFromAngle(angle, speed, this.body.velocity);
+
+        this.angle = angle;
+
+        this.body.gravity.set(gx, gy);
+
+    };
+
+    Bullet.prototype.update = function () {
+
+        if (this.tracking) {
+            this.rotation = Math.atan2(this.body.velocity.y, this.body.velocity.x);
+        }
+
+        if (this.scaleSpeed > 0) {
+            this.scale.x += this.scaleSpeed;
+            this.scale.y += this.scaleSpeed;
+        }
+
+    };
+
+    var Weapon = {};
+
+///single bulllet///
+
+    Weapon.SingleBullet = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Single Bullet', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 600;
+        this.fireRate = 100;
+
+        for (var i = 0; i < 64; i++) {
+            this.add(new Bullet(game, 'bullet5'), true);
+        }
+
+        return this;
+
+    };
+
+    Weapon.SingleBullet.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.SingleBullet.prototype.constructor = Weapon.SingleBullet;
+
+    Weapon.SingleBullet.prototype.fire = function (source) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        var x = source.x + 17;
+        var y = source.y + 10;
+
+        this.getFirstExists(false).fire(x, y, -90, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+
+    //  A homing bulet //
+
+    Weapon.HomingBullet = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Homing Bullet', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 350;
+        this.fireRate = 500;
+
+        for (var i = 0; i < 64; i++) {
+            this.add(new Bullet(game, 'bullet6'), true);
+        }
+
+        this.setAll('tracking', true);
+
+        return this;
+
+    };
+
+    Weapon.HomingBullet.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.HomingBullet.prototype.constructor = Weapon.HomingBullet;
+
+    Weapon.HomingBullet.prototype.fire = function (source,x1,y1) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        if(x1==undefined&&y1==undefined){
+            var x = source.x + 17;
+            var y = source.y + 13;
+        }
+        else{
+            var x = source.x + 17+x1;
+            var y = source.y + 13+y1;
+        }
+
+        var angleDeg = Math.atan2(py - y, px - x) * 180 / Math.PI;
+
+        this.getFirstExists(false).fire(x, y, angleDeg, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+
+///double bulllllet///
+
+    Weapon.DoubleBullet = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Double Bullet', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 600;
+        this.fireRate = 100;
+
+        for (var i = 0; i < 64; i++) {
+            this.add(new Bullet(game, 'bullet5'), true);
+        }
+
+        return this;
+
+    };
+
+    Weapon.DoubleBullet.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.DoubleBullet.prototype.constructor = Weapon.DoubleBullet;
+
+    Weapon.DoubleBullet.prototype.fire = function (source) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        var x1 = source.x + 7;
+        var y1 = source.y + 10;
+
+        var x2 = source.x + 27;
+        var y2 = source.y + 10;
+
+        this.getFirstExists(false).fire(x1, y1, -90, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x2, y2, -90, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+    //  3 wayyy //
+
+    Weapon.ThreeWay = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Three Way', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 10;
+        this.bulletSpeed = 100;
+        this.fireRate = 1000;
+
+        for (var i = 0; i < 96; i++) {
+            this.add(new Bullet(game, 'bullet7'), true);
+        }
+
+        return this;
+
+    };
+
+    Weapon.ThreeWay.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.ThreeWay.prototype.constructor = Weapon.ThreeWay;
+
+    Weapon.ThreeWay.prototype.fire = function (source,x1,y1) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        if(x1==undefined&&y1==undefined){
+            var x = source.x + 17;
+            var y = source.y + 13;
+        }
+        else{
+            var x = source.x + 17+x1;
+            var y = source.y + 13+y1;
+        }
+
+        this.getFirstExists(false).fire(x, y, 70, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 90, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 110, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+    ///////////////8 way///////////////
+
+    Weapon.EightWay = function (game) {
+
+        Phaser.Group.call(this, game, game.world, 'Eight Way', false, true, Phaser.Physics.ARCADE);
+
+        this.nextFire = 0;
+        this.bulletSpeed = 350;
+        this.fireRate = 500;
+
+        for (var i = 0; i < 96; i++) {
+            this.add(new Bullet(game, 'bullet'), true);
+        }
+
+        return this;
+
+    };
+
+    Weapon.EightWay.prototype = Object.create(Phaser.Group.prototype);
+    Weapon.EightWay.prototype.constructor = Weapon.EightWay;
+
+    Weapon.EightWay.prototype.fire = function (source,x1,y1) {
+
+        if (this.game.time.time < this.nextFire) {
+            return;
+        }
+
+        if(x1==undefined&&y1==undefined){
+            var x = source.x + 17;
+            var y = source.y + 13;
+        }
+        else{
+            var x = source.x + 17+x1;
+            var y = source.y + 13+y1;
+        }
+
+
+        this.getFirstExists(false).fire(x, y, 0, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 45, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 90, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 135, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 180, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 225, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 270, this.bulletSpeed, 0, 0);
+        this.getFirstExists(false).fire(x, y, 315, this.bulletSpeed, 0, 0);
+
+        this.nextFire = this.game.time.time + this.fireRate;
+
+    };
+
+
+    ///boss weapon systems///
+
+    Weapon.Boss = function (game) {
+
+        this.name = "Combo";
+        this.weapon1 = new Weapon.ThreeWay(game);
+        this.weapon2 = new Weapon.HomingBullet(game);
+        this.weapon3 = new Weapon.EightWay(game);
+        this.weapon4 = new Weapon.ThreeWay(game);
+        this.weapon5 = new Weapon.ThreeWay(game);
+
+    };
+
+    Weapon.Boss.prototype.reset = function () {
+
+        this.weapon1.visible = false;
+        this.weapon1.callAll('reset', null, 0, 0);
+        this.weapon1.setAll('exists', false);
+
+        this.weapon2.visible = false;
+        this.weapon2.callAll('reset', null, 0, 0);
+        this.weapon2.setAll('exists', false);
+
+        this.weapon3.visible = false;
+        this.weapon3.callAll('reset', null, 0, 0);
+        this.weapon3.setAll('exists', false);
+
+        this.weapon4.visible = false;
+        this.weapon4.callAll('reset', null, 0, 0);
+        this.weapon4.setAll('exists', false);
+
+        this.weapon5.visible = false;
+        this.weapon5.callAll('reset', null, 0, 0);
+        this.weapon5.setAll('exists', false);
+
+    };
+
+    Weapon.Boss.prototype.fire = function (source) {
+        this.weapon1.fire(source,115,85);
+        this.weapon2.fire(source,115,85);
+        this.weapon3.fire(source,115,85);
+        this.weapon4.fire(source,-100,85);
+        this.weapon5.fire(source,360,85);
+
+    };
+
+
+    var PhaserGame = function () {
+
+        this.background = null;
+
+        this.player = null;
+        this.hitbox = null;
+        this.score = 0;
+        this.cursors = null;
+        this.speed = 400;
+
+        this.weapons = [];
+        this.currentWeapon = 0;
+        this.weaponName = null;
+
+        this.enemies = null;
+        this.enemy = null;
+
+        this.explosions = null;
+
+        this.focused = false;
+
+    };
+
+    PhaserGame.prototype = {
+
+        init: function () {
+
+            this.game.renderer.renderSession.roundPixels = true;
+
+            this.physics.startSystem(Phaser.Physics.ARCADE);
+
+        },
+
+        preload: function () {
+            this.load.image('background', 'assets/starfield.png');
+            this.load.spritesheet('anime', 'assets/anime.png', 32, 48);
+            this.load.image('enemy', 'assets/invader.png');
+            this.load.spritesheet('kaboom', 'assets/explode.png', 128, 128);
+            this.load.image('fairy1','assets/fairy1.png');
+            this.load.spritesheet('fairy2', 'assets/fairy2.png', 32, 32);
+            this.load.spritesheet('fairy3', 'assets/fairy3.png', 64, 64);
+            this.load.image('hitbox','assets/enemy-bullet.png');
+            this.load.image('tyanochka','assets/utsuho.png');
+            this.load.bitmapFont('font', 'assets/desyrel-pink.png', 'assets/desyrel-pink.xml');
+            for (var i = 1; i <= 11; i++) {
+                this.load.image('bullet' + i, 'assets/bullet' + i + '.png');
+            }
+            this.load.image('bullet', 'assets/bullet.png');
+            this.load.image('menu', 'assets/starfield1.png');
+        },
+
+        create: function () {
+
+            this.background = this.add.tileSprite(0, 0, this.game.width, this.game.height, 'background');
+            this.background.autoScroll(0, 250);
+
+            this.weapons.push(new Weapon.SingleBullet(this.game));
+            this.weapons.push(new Weapon.DoubleBullet(this.game));
+
+
+            this.currentWeapon = 0;
+
+            for (var i = 1; i < this.weapons.length; i++) {
+                this.weapons[i].visible = false;
+            }
+
+            this.player = this.add.sprite(this.game.width / 2 - 15, this.game.height - 50, 'anime');
+            this.player.animations.add('left', [12, 13, 14, 15], 10, true);
+            this.player.animations.add('right', [20, 21, 22, 23], 10, true);
+            this.player.animations.add('center', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
+            this.hitbox = this.make.sprite(13,19,'hitbox');
+            this.hitbox.alpha = 0.7;
+            this.player.addChild(this.hitbox);
+
+            this.physics.arcade.enable(this.player);
+
+            this.player.body.collideWorldBounds = true;
+
+            menu = this.add.sprite(0,0, 'menu');
+
+            //menuStage();
+
+            this.scoretext = this.add.bitmapText(8, 520, 'font', '', 50);
+            this.livestext = this.add.bitmapText(500, 520, 'font', '', 50);
+            this.gameover = this.add.bitmapText(180, 150, 'font', '', 50);
+
+            this.explosions = game.add.group();
+            this.explosions.createMultiple(30, 'kaboom');
+            this.explosions.forEach(setupEnemy, this);
+
+
+            this.cursors = this.input.keyboard.createCursorKeys();
+        },
+
+        nextWeapon: function () {
+            this.currentWeapon++;
+            if (this.currentWeapon === this.weapons.length) {
+                this.currentWeapon = 0;
+            }
+            this.weapons[this.currentWeapon].visible = true;
+        },
+
+        update: function () {
+
+            px=this.player.x;
+            py=this.player.y;
+            this.player.body.velocity.set(0);
+
+            if (this.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) {
+                if (!this.focused) {
+                    this.focused = true;
+                    this.speed = 150;
+                    this.nextWeapon();
+                }
+            }
+            else {
+                if (this.focused) {
+                    this.focused = false;
+                    this.speed = 400;
+                    this.nextWeapon();
+                }
+            }
+
+
+            if (this.cursors.left.isDown) {
+                this.player.body.velocity.x = -this.speed;
+                this.player.animations.play('left');
+            }
+            else if (this.cursors.right.isDown) {
+                this.player.body.velocity.x = this.speed;
+                this.player.animations.play('right');
+            }
+            else {
+                this.player.animations.play('center');
+            }
+
+            if (this.cursors.up.isDown) {
+                this.player.body.velocity.y = -this.speed;
+            }
+            else if (this.cursors.down.isDown) {
+                this.player.body.velocity.y = this.speed;
+            }
+
+            if (this.input.keyboard.isDown(Phaser.Keyboard.Z)) {
+                this.weapons[this.currentWeapon].fire(this.player);
+            }
+
+            if(stage==0&&this.input.keyboard.isDown(Phaser.Keyboard.Z)){
+                stage++;
+                nextStage();
+                menu.kill();
+            }
+
+            if(go){
+                this.gameover.text = 'GAME OVER\n Press f5 to start again';
+            }
+
+            if(stage > 0) {
+                this.scoretext.text = 'Score: ' + score;
+                this.livestext.text = 'Lives:' + lives;
+
+                enemyFires();
+
+
+                if (stage == 8) {
+                    for (var i = 0; i < livingEnemies.length; i++) {
+                        game.physics.arcade.overlap(livingEnemies[i].weapon.weapon1, this.hitbox, enemyHitsPlayer, null, this);
+                        game.physics.arcade.overlap(livingEnemies[i].weapon.weapon2, this.hitbox, enemyHitsPlayer, null, this);
+                        game.physics.arcade.overlap(livingEnemies[i].weapon.weapon3, this.hitbox, enemyHitsPlayer, null, this);
+                        game.physics.arcade.overlap(livingEnemies[i].weapon.weapon4, this.hitbox, enemyHitsPlayer, null, this);
+                        game.physics.arcade.overlap(livingEnemies[i].weapon.weapon5, this.hitbox, enemyHitsPlayer, null, this);
+                    }
+                }
+                else {
+                    for (var i = 0; i < livingEnemies.length; i++) {
+                        game.physics.arcade.overlap(livingEnemies[i].weapon, this.hitbox, enemyHitsPlayer, null, this);
+                    }
+
+                }
+
+                game.physics.arcade.overlap(this.weapons[0], enemies, collisionHandler, null, this);
+                game.physics.arcade.overlap(this.weapons[1], enemies, collisionHandler, null, this);
+            }
+        }
+
+    };
+
+
+    function enemyFires () {
+
+        livingEnemies.length=0;
+
+        enemies.forEachAlive(function(enemy){
+            livingEnemies.push(enemy);
+        });
+
+
+        if (livingEnemies.length > 0)
+        {
+
+            for(var i = 0; i < livingEnemies.length; i++)
+            {
+                livingEnemies[i].weapon.fire(livingEnemies[i]);
+            }
+            firingTimer = game.time.now;
+        }
+
+
+        if (livingEnemies.length === 0)
+
+        {
+            stage++;
+            nextStage();
+        }
+    }
+
+    function nextStage() {
+        switch (stage){
+            case 1:
+                stage1();
+                break;
+            case 2:
+                stage2();
+                break;
+            case 3:
+                stage3();
+                break;
+            case 4:
+                stage4();
+                break;
+            case 5:
+                stage5();
+                break;
+            case 6:
+                stage6();
+                break;
+            case 7:
+                stage7();
+                break;
+            case 8:
+                stageX();
+                break;
+        }
+    }
+
+    function collisionHandler(bullet, enemy) {
+        bullet.kill();
+        enemy.hp--;
+        if (enemy.hp < 1){
+            enemy.kill();
+            var explosion = this.explosions.getFirstExists(false);
+            explosion.reset(enemy.body.x, enemy.body.y);
+            explosion.play('kaboom', 30, false, true);
+            score+=enemy.score;
+        }
+
+
+    }
+
+    function enemyHitsPlayer (player,bullet) {
+        bullet.kill();
+        lives--;
+        score-=500;
+        var explosion = this.explosions.getFirstExists(false);
+        explosion.reset(player.body.x, player.body.y);
+        explosion.play('kaboom', 30, false, true);
+        if (lives < 1)
+        {
+            this.player.kill();
+            this.hitbox.kill();
+            go = true;
+        }
+    }
+
+
+    function setupEnemy(enemy) {
+        enemy.anchor.x = 0.5;
+        enemy.anchor.y = 0.5;
+        enemy.animations.add('kaboom');
+
+    }
+
+    function menuStage() {
+
+
+    }
+
+    function stage1() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+            for(var x=0;x<3;x++) {
+                var enemy = Enemy1((x + 3) * 110-70, 50);
+            }
+            for(var x=0;x<3;x++) {
+                var enemy = Enemy1((x + 1) * 220-70, 110);
+            }
+    }
+
+    function stage2() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage3() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage4() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage5() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy2((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage6() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stage7() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy1((x + 3) * 110-70, 50);
+        }
+
+        for(var x=0;x<3;x++) {
+            if (x === 1){
+                continue
+            }
+            var enemy = Enemy2((x + 3) * 110-70, 110);
+        }
+
+        for(var x=0;x<3;x++) {
+            var enemy = Enemy3((x + 1) * 220-70, 110);
+        }
+
+    }
+
+    function stageX() {
+        enemies = game.add.group();
+        enemies.enableBody = true;
+        enemies.physicsBodyType = Phaser.Physics.ARCADE;
+        var enemy = Boss(270,60);
+
+    }
+
+    game.state.add('Game', PhaserGame, true);
+
+</script>
+</body>
+</html>
